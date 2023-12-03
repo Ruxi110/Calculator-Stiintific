@@ -13,7 +13,7 @@ int main()
     ExpressionEvaluator evaluator;
 
     string infixExpression;
-    cout << "Enter an infix expression: ";
+    cout << "infix expression: ";
     getline(cin, infixExpression);
 
     string postfixExpression = evaluator.infixToPostfix(infixExpression);
@@ -23,6 +23,6 @@ int main()
     int result = evaluator.evaluatePostfix(postfixExpression);
 
     cout << "Result: " << result << std::endl;
+    
 
-    return 0;
 }

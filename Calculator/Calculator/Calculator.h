@@ -23,37 +23,38 @@ public:
     string getExpresie();
 
     void setExpresie(string expresie);
-        int getId();
+    int getId();
 
-        double* getOperanzi();
+    double* getOperanzi();
 
-        void setOperanzi(double* vector, int nrElem);
+    void setOperanzi(double* vector, int nrElem);
 
-        char* getOperatori();
+    char* getOperatori();
 
-        void setOperatori(char* operatori, int nrElem);
-
-
-        int getNrOperatori();
-
-        void setNrOperatori(int nrOperatori);
-            static int getGeneratorId();
-
-            static void setGeneratoriId(int startId);
-                Calculator();
-
-                Calculator(string expresie, int idEcuatie);
+    void setOperatori(char* operatori, int nrElem);
 
 
-    
-                ~Calculator();
+    int getNrOperatori();
 
-                void operator=(Calculator c);
+    void setNrOperatori(int nrOperatori);
+    static int getGeneratorId();
 
-                double operator[](int index);
+    static void setGeneratoriId(int startId);
+    Calculator();
 
-                bool operator==(int x);
+    Calculator(string expresie, int idEcuatie);
 
+    Calculator(Calculator& c);
+
+    ~Calculator();
+
+    void operator=(Calculator c);
+
+    double operator[](int index);
+
+    bool operator==(int x);
+
+    friend istream& operator>>(istream& in, Calculator c);
     friend bool operator==(int x, Calculator c);
     friend ostream& operator<<(ostream& out, Calculator c);
 };

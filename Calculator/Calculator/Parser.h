@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-
+using namespace std;
 class Parser {
 private:
     std::string* lista = nullptr;
@@ -15,20 +15,25 @@ private:
 
 public:
     Parser();
-    explicit Parser(std::string expresie);
+    explicit Parser(string expresie);
 
-    std::string* getLista();
+    string* getLista();
     char* getOperatori();
     int getNrElementeOperatori();
-    std::string getExpresie();
+    string getExpresie();
     void setExpresie(std::string expresie);
     void afisareLista();
-    std::string extragereNumar(int index);
+    void operator=(Parser p);
+    string extragereNumar(int index);
     void prelucrareExpresie();
+    ~Parser();
 
+    Parser(Parser& p);
     bool operator!();
-    explicit operator std::string();
-    friend std::ostream& operator<<(std::ostream& out, const Parser& p);
+    explicit operator string();
+    friend istream& operator>>(istream& in, Parser& p);
+    friend ostream& operator<<(ostream& out, const Parser& p);
 };
 
-std::ostream& operator<<(std::ostream& out, const Parser& p);
+ostream& operator<<(ostream& out, const Parser& p);
+istream& operator>>(istream& in, Parser& p);

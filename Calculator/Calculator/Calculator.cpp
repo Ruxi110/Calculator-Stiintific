@@ -141,6 +141,13 @@ Calculator:: ~Calculator() {
     }
 }
 
+Calculator::Calculator(Calculator& c): id(c.id)
+{
+    this->expresie = c.expresie;
+    this->setOperanzi(c.operanzi, c.nrOperanzi);
+    this->setOperatori(c.operatori, c.nrOperatori);
+}
+
 void Calculator:: operator=(Calculator c) {
     this->expresie = c.expresie;
     this->setOperanzi(c.operanzi, c.nrOperanzi);
@@ -173,6 +180,11 @@ ostream& operator<<(ostream& out, Calculator c) {
         out << c.operatori[i] << " ";
     }
     return out;
+}
+istream& operator>>(istream& in, Calculator c)
+{
+    in >> c.expresie;
+    return in;
 }
 bool operator==(int x, Calculator c)
 {

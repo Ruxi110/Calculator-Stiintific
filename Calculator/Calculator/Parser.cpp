@@ -1,6 +1,7 @@
 
 #include "Parser.h"
 #include "Utils.h"
+using namespace std;
 
 Parser::Parser() {
     lista = nullptr;
@@ -135,8 +136,6 @@ void Parser::prelucrareExpresie() {
             delete[] lista;
             lista = Utils::copiereString(copie, nrElemLista + 1);
             nrElemLista++;
-            // ... (previous code)
-
             lista[nrElemLista - 1] = "+";
         }
         else if (operatori[i] == '-') {
@@ -152,11 +151,49 @@ void Parser::prelucrareExpresie() {
     }
 }
 
+Parser::~Parser() {
+    if (lista != nullptr) {
+        delete[] lista;
+        lista = nullptr;
+    }
+}
+
+Parser::Parser(Parser& p)
+{
+    delete[] lista;
+    lista = new string[p.nrElemLista];
+    for (int i = 0; i < p.nrElemLista; i++)
+        lista[i] = p.lista[i];
+
+    nrElemLista = p.nrElemLista;
+
+    for (int i = 0; i < p.nrElementeOperatori;i++)
+        operatori[i] = p.operatori[i];
+
+    nrElementeOperatori = p.nrElementeOperatori;
+    expresie = p.expresie;
+}
+
+void Parser :: operator=(Parser p) {
+    delete[] lista;
+    lista = new string[p.nrElemLista];
+    for (int i = 0; i < p.nrElemLista; i++)
+        lista[i] = p.lista[i];
+
+    nrElemLista = p.nrElemLista;
+
+    for (int i = 0; i < p.nrElementeOperatori;i++)
+        operatori[i] = p.operatori[i];
+
+    nrElementeOperatori = p.nrElementeOperatori;
+    expresie = p.expresie;
+}
+
 bool Parser::operator!() {
     return nrElemLista == 0;
 }
 
-Parser::operator std::string() {
+Parser::operator string() {
     return expresie;
 }
 
@@ -172,5 +209,10 @@ std::ostream& operator<<(std::ostream& out, const Parser& p) {
 
     out << std::endl << p.expresie;
     return out;
+}
+
+istream& operator>>(istream& in, Parser& p) {
+    in >> p.expresie;
+    return in;
 }
 
