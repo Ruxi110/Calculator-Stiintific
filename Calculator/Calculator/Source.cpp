@@ -1,208 +1,440 @@
-#include<iostream>
-#include<string>
+#include <iostream>
+#include <string>
+#include <exception>
 
 using namespace std;
 
+class Utils {
+public:
+    double* copiereVector(double* vector, int nrElemente) {
+        if (vector == nullptr) {
+            return nullptr;
+        }
 
+        double* vectorNou = new double[nrElemente];
+        for (int i = 0; i < nrElemente; i++)
+        {
+            vectorNou[i] = vector[i];
+        }
+        return vectorNou;
+    }
 
+    static string* copiereString(string* vector, int nrElemente) {
 
-/*string tokenParanteza(int index) {
-		double rezultat = 0.0;
-		double st = 0.0;
-		double dr = this->extragereNumar(index + 1);
-		int indexFinal = index + pointerIndex + 1;
-		if (expression[indexFinal] == '+')
-		{
-			st = this->extragereNumar(index + 1);
-			rezultat= dr + st;
-		}
-		else if (expression[indexFinal] == '-')
-		{
-			 st = this->extragereNumar(index + 1);
-			rezultat = dr - st;
-		}
-		else if(expression[indexFinal]=='*')
-		{
-			 st = this->extragereNumar(index + 1);
-			rezultat = dr * st;
-		}
-		else if (expression[indexFinal] == '/')
-		{
-			 st = this->extragereNumar(index + 1);
-			if (st == 0)
-			{
-				throw exception("nu se poate imparti la 0");
-			}
-			else
-				rezultat = dr * st;
-		}
-		indexFinal = indexFinal + to_string(st).size();
-		string prefix = expression.substr(0, index);
-		string sufix = expression.substr(indexFinal + 1, expression.size());
-		string expresieModificata = prefix + to_string(rezultat) + sufix;
-		expression = expresieModificata;
-		return expression;
-	}*/
+        if (vector == nullptr) {
+            return nullptr;
+        }
 
-	//void ordineaOperatiilor()
-	//{
-	//	for (int i = 0; i <= expression.size(); i++)
-	//	{
-	//		this->extragereNumar(0);
-	//		if (expression[i] == '*') {
-	//			this->inmultire();
-	//		}
-	//		else if (expression[i] == '/') {
-	//			this->impartire();
-	//		}
-	//	}
-	//}
+        string* vectorNou = new string[nrElemente];
+        for (int i = 0; i < nrElemente; i++) {
+            vectorNou[i] = vector[i];
+        }
+        return vectorNou;
+    }
+};
 
-
-
-class Parser {
-
+class Calculator {
 private:
-
-	double* vector = nullptr;
-	char* operatori = nullptr;
-	string sirExtras;
-	double nrExtras = 0;
-	char token;
-	int pointerIndex = 0;
-	double operatorDreapta = 0.0;
-	string expression;
-
+    int const id;
+    string expresie;
+    double* operanzi = nullptr;
+    int nrOperanzi = 0;
+    char operatori[100];
+    int nrOperatori = 0;
+    static int GENERATOR_ID;
+    string sirExtras;
 public:
 
+    string getExpresie() {
+        return expresie;
+    }
 
-	void setExpression(string expression) {
-		this->expression = expression;
-	}
+    void setExpresie(string expresie) {
+        this->expresie = expresie;
+    }
 
-	string getExpression() {
-		return expression;
-	}
+    int getId() {
+        return id;
+    }
 
-	Parser(string expresie) {
-		if (expresie.empty()) {
-			throw exception("sirul primit este gol");
-		}
-		expression = expresie;
-	}
+    double* getOperanzi() {
+        double* copie = new double[nrOperanzi];
+        for (int i = 0; i < nrOperanzi;i++)
+            copie[i] = operanzi[i];
+        return copie;
+    }
 
-	double extragereNumar(int index) {
-		if (this->expression.empty()) {
-			throw exception("nu se poate extrage numar, deoarece sirul este null");
-		}
+    void setOperanzi(double* vector, int nrElem) {
+        if (operanzi != nullptr) {
+            delete[] operanzi;
+        }
+        operanzi = new double[nrElem];
+        for (int i = 0; i < nrElem;i++)
+            operanzi[i] = vector[i];
 
-		int indexNr = index;
-		while ((expression[indexNr] >= '0' && expression[indexNr] <= '9') || expression[indexNr] == '.')
-		{
-			sirExtras += expression[indexNr];
-			indexNr++;
-		}
-		pointerIndex = index + sirExtras.size();
-		if (!sirExtras.empty()) {
-			nrExtras = stod(sirExtras);
-		}
+        nrOperanzi = nrElem;
+    }
 
-		sirExtras = "";
-		return nrExtras;
-	}
+    char* getOperatori() {
+        char* copie = new char[nrOperatori];
+        for (int i = 0; i < nrOperatori; i++)
+        {
+            copie[i] = operatori[i];
+        }
+        return copie;
+    }
 
-	void operatoriGrad2()
-	{
-		while (expression.find('*') != std::string::npos || expression.find('/') != std::string::npos)
-		{
-			for (int i = 0; i < expression.size(); i++) {
-				if (expression[i] >= '0' && expression[i] <= '9')
-				{
-					operatorDreapta = this->extragereNumar(i);
-					i = i + to_string(operatorDreapta).size();
-				}
-				else if (expression[i] == '*') {
-					this->inmultire(i);
-				}
-				else if (expression[i] == '/') {
-					this->impartire(i);
-				}
-				else i++;
-			}
-		}
+    void setOperatori(char* operatori, int nrElem) {
+        for (int i = 0; i < nrElem; i++)
+            this->operatori[i] = operatori[i];
 
-	}
+        this->nrOperatori = nrElem;
+    }
 
-	void inmultire(int index) {
-		double operatorStanga = this->extragereNumar(index);
-		double rezultat = operatorDreapta * operatorStanga;
-		string prefix = expression.substr(0, index - to_string(operatorDreapta).size());
-		string sufix = expression.substr(index + to_string(operatorStanga).size() + 1, expression.size());
-		string expresieModificata = prefix + to_string(rezultat) + sufix;
-		expression = expresieModificata;
-		operatoriGrad2();
-	}
 
-	string impartire(int index) {
-		double operatorStanga = this->extragereNumar(index);
-		if (operatorStanga == 0) {
-			throw exception("nu se poate impartii la 0");
-		}
-		double rezultat = operatorDreapta / operatorStanga;
-		string prefix = expression.substr(0, index - to_string(operatorDreapta).size());
-		string sufix = expression.substr(index + to_string(operatorStanga).size() + 1, expression.size());
-		string expresieModificata = prefix + to_string(rezultat) + sufix;
-		expression = expresieModificata;
-		operatoriGrad2();
-	}
 
-	void operatoriGrad1() {
-		while (expression.find('+') != std::string::npos || expression.find('-') != std::string::npos)
-		{
-			for (int i = 0; i < expression.size(); i++) {
-				if (expression[i] >= '0' && expression[i] <= '9')
-				{
-					operatorDreapta = this->extragereNumar(i);
-					i = i + to_string(operatorDreapta).size();
-				}
-				else if (expression[i] == '+') {
-					this->adunare(i);
-				}
-				else if (expression[i] == '-') {
-					this->scadere(i);
-				}
-				else i++;
-			}
-		}
+    int getNrOperatori() {
+        return nrOperatori;
+    }
 
-	}
+    void setNrOperatori(int nrOperatori) {
+        this->nrOperatori = nrOperatori;
+    }
 
-	void adunare(int index) {
-		double operatorStanga = this->extragereNumar(index);
-		double rezultat = operatorDreapta + operatorStanga;
-		string prefix = expression.substr(0, index - to_string(operatorDreapta).size());
-		string sufix = expression.substr(index + to_string(operatorStanga).size() + 1, expression.size());
-		string expresieModificata = prefix + to_string(rezultat) + sufix;
-		expression = expresieModificata;
-		operatoriGrad1();
-	}
+    static int getGeneratorId() {
+        return Calculator::GENERATOR_ID;
+    }
 
-	void scadere(int index) {
-		double operatorStanga = this->extragereNumar(index);
-		double rezultat = operatorDreapta - operatorStanga;
-		string prefix = expression.substr(0, index - to_string(operatorDreapta).size());
-		string sufix = expression.substr(index + to_string(operatorStanga).size() + 1, expression.size());
-		string expresieModificata = prefix + to_string(rezultat) + sufix;
-		expression = expresieModificata;
-		operatoriGrad1();
-	}
+    static void setGeneratoriId(int startId) {
+        Calculator::GENERATOR_ID = startId;
+    }
+
+    Calculator() :id(GENERATOR_ID) {
+        expresie = "";
+        operanzi = nullptr;
+        nrOperanzi = 0;
+        nrOperatori = 0;
+        Calculator::GENERATOR_ID++;
+    }
+
+    Calculator(string expresie, int idEcuatie) :id(idEcuatie) {
+        this->expresie = expresie;
+        Calculator::GENERATOR_ID++;
+    }
+
+
+    double extragereNumar(int index) {
+        sirExtras = "";
+        double nrExtras = 0.0;
+        if (index >= expresie.size()) {
+            throw exception("index invalid");
+        }
+
+        while ((expresie[index] >= '0' && expresie[index] <= '9') || expresie[index] == '.') {
+            sirExtras += expresie[index];
+            index++;
+            if (index >= expresie.size()) {
+                break;
+            }
+        }
+        if (!sirExtras.empty()) {
+            nrExtras = stod(sirExtras);
+        }
+        return nrExtras;
+    }
+
+    void Token() {
+        int i = 0;
+        while (i < expresie.size())
+        {
+            if (expresie[i] == '*' || expresie[i] == '/' || expresie[i] == '+' || expresie[i] == '-') {
+                operatori[i] = expresie[i];
+                i++;
+            }
+            else if (expresie[i] == ' ') {
+                i++;
+            }
+            else if ((expresie[i] >= '0' && expresie[i] <= '9') || expresie[i] == '.')
+            {
+                double* copie = new double[nrOperanzi];
+                for (int i = 0; i < nrOperanzi; i++)
+                    copie[i] = operanzi[i];
+                delete[] operanzi;
+                operanzi = new double[nrOperanzi + 1];
+                for (int i = 0; i < nrOperanzi; i++)
+                    operanzi[i] = copie[i];
+                nrOperanzi++;
+                operanzi[nrOperanzi - 1] = extragereNumar(i);
+                i = i + sirExtras.size();
+            }
+        }
+    }
+
+    ~Calculator() {
+        if (operanzi != nullptr) {
+            delete[] operanzi;
+            operanzi = nullptr;
+            Calculator::GENERATOR_ID--;
+        }
+    }
+
+    void operator=(Calculator c) {
+        this->expresie = c.expresie;
+        this->setOperanzi(c.operanzi, c.nrOperanzi);
+        this->setOperatori(c.operatori, c.nrOperatori);
+    }
+
+    double operator[](int index) {
+        if (index >= 0 && index < nrOperanzi) {
+            return operanzi[index];
+        }
+    }
+
+    bool operator==(int x) {
+        if (nrOperanzi + nrOperatori == x) return 1;
+        else return 0;
+    }
+
+    friend bool operator==(int x, Calculator c);
+    friend ostream& operator<<(ostream& out, Calculator c);
 };
+
+ostream& operator<<(ostream& out, Calculator c) {
+    out << c.nrOperanzi;
+    out << endl;
+    for (int i = 0; i < c.nrOperanzi;i++)
+    {
+        out << c.operanzi[i] << " ";
+    }
+    out << endl;
+    out << c.nrOperatori;
+    out << endl;
+    for (int i = 0; i < c.nrOperatori; i++)
+    {
+        out << c.operatori[i] << " ";
+    }
+    return out;
+}
+
+int Calculator::GENERATOR_ID = 1;
+bool operator==(int x, Calculator c)
+{
+    if (x == c.nrOperanzi + c.nrOperatori)
+        return 1;
+    else
+        return 0;
+}
+
+class Parser {
+private:
+    string* lista = nullptr;
+    int nrElemLista = 0;
+    char operatori[100];
+    int nrElementeOperatori = 0;
+    string expresie;
+    string sirExtras;
+public:
+
+    Parser() {
+        string* lista = nullptr;
+        int nrElemLista = 0;
+        int nrElementeOperatori = 0;
+        string expresie;
+        string sirExtras;
+    }
+
+    Parser(string expresie) {
+        this->expresie = expresie;
+    }
+
+    string* getLista() {
+        string* copie = new string[nrElemLista];
+        for (int i = 0; i < nrElemLista; i++)
+            copie[i] = lista[i];
+
+        return copie;
+    }
+
+    char* getOperatori() {
+        char* copie = new char[nrElementeOperatori];
+        for (int i = 0; i < nrElementeOperatori;i++)
+            copie[i] = operatori[i];
+        return copie;
+    }
+
+    int getNrElementeOperatori() {
+        return nrElementeOperatori;
+    }
+
+    string getExpresie() {
+        return expresie;
+    }
+
+    void setExpresie(string expresie) {
+        this->expresie = expresie;
+    }
+
+    void afisareLista() {
+        for (int i = 0; i < nrElemLista; i++) {
+            cout << lista[i] << " ";
+        }
+    }
+
+    string extragereNumar(int index) {
+        sirExtras = "";
+        if (index >= expresie.size()) {
+            throw exception("index invalid");
+        }
+
+        while ((expresie[index] >= '0' && expresie[index] <= '9') || expresie[index] == '.') {
+            sirExtras += expresie[index];
+            index++;
+            if (index >= expresie.size()) {
+                break;
+            }
+        }
+        return sirExtras;
+    }
+
+    void prelucrareExpresie() {
+        int i = 0;
+        while (i < expresie.size())
+        {
+            if ((expresie[i] >= '0' && expresie[i] <= '9') || expresie[i] == '.')
+            {
+                string* copie = new string[nrElemLista];
+                for (int i = 0; i < nrElemLista; i++)
+                {
+                    copie[i] = lista[i];
+                }
+                delete[] lista;
+                lista = Utils::copiereString(copie, nrElemLista + 1);
+                nrElemLista++;
+                lista[nrElemLista - 1] = extragereNumar(i);
+                i = i + lista[nrElemLista - 1].size();
+            }
+            else if (expresie[i] == '/' || expresie[i] == '*')
+            {
+                operatori[nrElementeOperatori] = expresie[i];
+                nrElementeOperatori++;
+            }
+            else if (expresie[i] == '+' || expresie[i] == '-') {
+                if (operatori[nrElementeOperatori - 1] == '*')
+                {
+                    string* copie = new string[nrElemLista];
+                    for (int i = 0; i < nrElemLista; i++)
+                    {
+                        copie[i] = lista[i];
+                    }
+                    delete[] lista;
+                    lista = Utils::copiereString(copie, nrElemLista + 1);
+                    nrElemLista++;
+                    lista[nrElemLista - 1] = "*";
+                    i++;
+                    operatori[nrElementeOperatori - 1] = expresie[i];
+                }
+                else if (operatori[nrElementeOperatori - 1] == '/') {
+                    string* copie = new string[nrElemLista];
+                    for (int i = 0; i < nrElemLista; i++)
+                    {
+                        copie[i] = lista[i];
+                    }
+                    delete[] lista;
+                    lista = Utils::copiereString(copie, nrElemLista + 1);
+                    nrElemLista++;
+                    lista[nrElemLista - 1] = "*";
+                    i++;
+                    operatori[nrElementeOperatori - 1] = expresie[i];
+                }
+            }
+        }
+        for (int i = nrElementeOperatori - 1; i >= 0;i--)
+        {
+            if (operatori[i] == '*')
+            {
+                string* copie = new string[nrElemLista];
+                for (int i = 0; i < nrElemLista; i++)
+                {
+                    copie[i] = lista[i];
+                }
+                delete[] lista;
+                lista = Utils::copiereString(copie, nrElemLista + 1);
+                nrElemLista++;
+                lista[nrElemLista - 1] = "*";
+
+            }
+            else  if (operatori[i] == '/')
+            {
+                string* copie = new string[nrElemLista];
+                for (int i = 0; i < nrElemLista; i++)
+                {
+                    copie[i] = lista[i];
+                }
+                delete[] lista;
+                lista = Utils::copiereString(copie, nrElemLista + 1);
+                nrElemLista++;
+                lista[nrElemLista - 1] = "/";
+            }
+            else  if (operatori[i] == '+')
+            {
+                string* copie = new string[nrElemLista];
+                for (int i = 0; i < nrElemLista; i++)
+                {
+                    copie[i] = lista[i];
+                }
+                delete[] lista;
+                lista = Utils::copiereString(copie, nrElemLista + 1);
+                nrElemLista++;
+                lista[nrElemLista - 1] = "+";
+            }
+            else  if (operatori[i] == '-')
+            {
+                string* copie = new string[nrElemLista];
+                for (int i = 0; i < nrElemLista; i++)
+                {
+                    copie[i] = lista[i];
+                }
+                delete[] lista;
+                lista = Utils::copiereString(copie, nrElemLista + 1);
+                nrElemLista++;
+                lista[nrElemLista - 1] = "-";
+            }
+        }
+    }
+
+    bool operator!() {
+        if (nrElemLista == 0)
+            return 0;
+        else return 1;
+    }
+
+    explicit operator string() {
+        return expresie;
+    }
+
+    friend ostream& operator<<(ostream& out, Parser p);
+};
+
+ostream& operator<<(ostream& out, Parser p)
+{
+    out << p.nrElemLista;
+    out << endl;
+    for (int i = 0; i < p.nrElemLista; i++)
+        out << p.lista[i] << endl;
+
+    out << p.nrElementeOperatori;
+    out << endl;
+    for (int i = 0; i < p.nrElementeOperatori; i++) {
+        out << p.operatori[i] << " ";
+    }
+
+    out << endl << p.expresie;
+    return out;
+}
 
 int main()
 {
-	string s = "1+2*3+4";
-	Parser parser(s);
-	parser.operatoriGrad2();
-	parser.operatoriGrad1();
-	cout << parser.getExpression();
+    string s = "1+2*3+4";
+    Parser parser(s);
+    return 0;
 }
