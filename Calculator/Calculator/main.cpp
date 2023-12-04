@@ -1,6 +1,8 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <string>
 #include <cctype>  
+#include<sstream>
 #include <cstdlib>
 #include "ExpressionEvaluator.h"
 #include "Calculator.h"
@@ -8,21 +10,18 @@
 #include "Utils.h"
 
 
-int main()
-{
-    ExpressionEvaluator evaluator;
+int main() {
+    std::string inputExpression;
+    std::cout << "Enter a mathematical expression: ";
+    std::getline(std::cin, inputExpression);
 
-    string infixExpression;
-    cout << "infix expression: ";
-    getline(cin, infixExpression);
+    Tokenizer tokenizer(std::move(inputExpression));
+    tokenizer.tokenize();
 
-    string postfixExpression = evaluator.infixToPostfix(infixExpression);
+    ExpressionEvaluator expressionEvaluator(tokenizer.getTokens(), tokenizer.getNumTokens());
+    double result = expressionEvaluator.evaluate();
 
-    cout << "Postfix expression: " << postfixExpression << std::endl;
+    std::cout << "Result: " << result << std::endl;
 
-    int result = evaluator.evaluatePostfix(postfixExpression);
-
-    cout << "Result: " << result << std::endl;
-    
-
+    return 0;
 }

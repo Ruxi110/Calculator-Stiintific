@@ -1,154 +1,109 @@
+
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <string>
 #include <cctype>  
 #include <cstdlib>
+#include <cstring>
+#include <exception>
+#include <sstream>
 #include "ExpressionEvaluator.h"
 
-ExpressionEvaluator::ExpressionEvaluator() : outputIndex(-1), operatorIndex(-1), stackIndex(-1) {}
+    ExpressionEvaluator:: ExpressionEvaluator(char** tokens, size_t numTokens) : tokens_(tokens), numTokens_(numTokens), currentIndex_(0), result_(0.0) {}
+    ExpressionEvaluator:: ExpressionEvaluator() {
+        tokens_ = nullptr;
+        numTokens_ = 0;
+        currentIndex_ = 0;
+        result_ = 0.0;
+    }
 
-bool ExpressionEvaluator::isOperator(char c) {
-    return (c == '+' || c == '-' || c == '*' || c == '/');
-}
 
-int ExpressionEvaluator::getPrecedence(char op) {
-    if (op == '+' || op == '-')
-        return 1;
-    if (op == '*' || op == '/')
-        return 2;
-    return 0;
-}
+    ExpressionEvaluator::ExpressionEvaluator(ExpressionEvaluator& t) {
+        numTokens_ = t.numTokens_;
+        currentIndex_ = t.currentIndex_;
+        result_ = t.result_;
 
-void ExpressionEvaluator::pushToOutput(char element) {
-    if (outputIndex < MAX_SIZE - 1) {
-        outputQueue[++outputIndex] = element;
-    }
-    else {
-        cerr << "eroare" << endl;
-        exit(EXIT_FAILURE);
-    }
-}
+        tokens_ = new char* [t.numTokens_];
+        for (int i = 0; i < t.numTokens_; i++)
+            tokens_[i] = new char[strlen(t.tokens_[i]) + 1];
 
-void ExpressionEvaluator::pushToOperatorStack(char element) {
-    if (operatorIndex < MAX_SIZE - 1) {
-        operatorStack[++operatorIndex] = element;
+        for (int i = 0; i < t.numTokens_; i++)
+            strcpy_s(tokens_[i], strlen(t.tokens_[i]) + 1, t.tokens_[i]);
     }
-    else {
-        cerr << "Operator invalid" << endl;
-        exit(EXIT_FAILURE);
-    }
-}
 
-char ExpressionEvaluator::popFromOperatorStack() {
-    if (operatorIndex >= 0) {
-        return operatorStack[operatorIndex--];
-    }
-    else {
-        cerr << "index invalid" << endl;
-        exit(EXIT_FAILURE);
-    }
-}
+    void ExpressionEvaluator:: operator=(ExpressionEvaluator t) {
+        if (&t == this) {
+            return;
+        };
 
-void ExpressionEvaluator::pushOperand(int operand) {
-    if (stackIndex < MAX_SIZE - 1) {
-        operandStack[++stackIndex] = operand;
-    }
-    else {
-        cerr << "index invalid" << endl;
-        exit(EXIT_FAILURE);
-    }
-}
-
-int ExpressionEvaluator::popOperand() {
-    if (stackIndex >= 0) {
-        return operandStack[stackIndex--];
-    }
-    else {
-        cerr << "invalid index" << endl;
-        exit(EXIT_FAILURE);
-    }
-}
-
-string ExpressionEvaluator::infixToPostfix(const std::string& infixExpression) 
-{
-    for (char token : infixExpression) {
-        if (isalnum(token)) {
-            pushToOutput(token);
-        }
-        else if (isOperator(token)) {
-            while (operatorIndex >= 0 && isOperator(operatorStack[operatorIndex]) &&
-                getPrecedence(operatorStack[operatorIndex]) >= getPrecedence(token)) {
-                pushToOutput(popFromOperatorStack());
+        numTokens_ = t.numTokens_;
+        currentIndex_ = t.currentIndex_;
+        result_ = t.result_;
+        /*if (tokens_ != nullptr) {
+            for (size_t i = 0; i < numTokens_; ++i) {
+                delete[] tokens_[i];
             }
-            pushToOperatorStack(token);
-        }
-        else if (token == '(') {
-            pushToOperatorStack(token);
-        }
-        else if (token == ')') {
-            while (operatorIndex >= 0 && operatorStack[operatorIndex] != '(') {
-                pushToOutput(popFromOperatorStack());
-            }
-            if (operatorIndex >= 0 && operatorStack[operatorIndex] == '(') {
-                popFromOperatorStack();
+
+            delete[] tokens_;
+        }*/
+
+        tokens_ = new char* [t.numTokens_];
+        for (int i = 0; i < t.numTokens_; i++)
+            tokens_[i] = new char[strlen(t.tokens_[i]) + 1];
+
+        for (int i = 0; i < t.numTokens_; i++)
+            strcpy_s(tokens_[i], strlen(t.tokens_[i]) + 1, t.tokens_[i]);
+    }
+
+    ExpressionEvaluator ExpressionEvaluator:: operator++() {
+        result_++;
+        return*this;
+    }
+
+    ExpressionEvaluator ExpressionEvaluator:: operator++(int i) {
+        ExpressionEvaluator copie = *this;
+        result_++;
+        return copie;
+    }
+  
+
+    double ExpressionEvaluator:: evaluate() {
+        while (currentIndex_ < numTokens_) {
+            if (tokens_[currentIndex_][0] == '+' || tokens_[currentIndex_][0] == '-' ||
+                tokens_[currentIndex_][0] == '*' || tokens_[currentIndex_][0] == '/') {
+                applyOperator(tokens_[currentIndex_][0]);
+                currentIndex_++;
             }
             else {
-                std::cerr << "eroare" << std::endl;
-                exit(EXIT_FAILURE);
+                result_ = strtod(tokens_[currentIndex_], nullptr);
+                currentIndex_++;
             }
         }
+
+        return result_;
     }
 
-    while (operatorIndex >= 0) {
-        if (operatorStack[operatorIndex] == '(' || operatorStack[operatorIndex] == ')') {
-            std::cerr << "Mismatched parentheses." << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        pushToOutput(popFromOperatorStack());
-    }
+    void ExpressionEvaluator:: applyOperator(char op) {
+        double right = strtod(tokens_[++currentIndex_], nullptr);
+        double left = result_;
 
-    return std::string(outputQueue, outputIndex + 1);
-}
-
-int ExpressionEvaluator::evaluatePostfix(const std::string& postfixExpression) {
-    for (char token : postfixExpression) {
-        if (isdigit(token)) {
-            pushOperand(token - '0');
-        }
-        else if (isOperator(token)) {
-            int operand2 = popOperand();
-            int operand1 = popOperand();
-            int result = performOperation(token, operand1, operand2);
-            pushOperand(result);
+        switch (op) {
+        case '+':
+            result_ = left + right;
+            break;
+        case '-':
+            result_ = left - right;
+            break;
+        case '*':
+            result_ = left * right;
+            break;
+        case '/':
+            if (right != 0.0) {
+                result_ = left / right;
+            }
+            else {
+                std::cerr << "Error: Division by zero." << std::endl;
+            }
+            break;
         }
     }
-
-    if (stackIndex == 0) {
-        return operandStack[stackIndex];
-    }
-    else {
-        std::cerr << "Error: Invalid postfix expression." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-}
-
-int ExpressionEvaluator::performOperation(char op, int operand1, int operand2) {
-    switch (op) {
-    case '+':
-        return operand1 + operand2;
-    case '-':
-        return operand1 - operand2;
-    case '*':
-        return operand1 * operand2;
-    case '/':
-        if (operand2 != 0) {
-            return operand1 / operand2;
-        }
-        else {
-            std::cerr << "nu se poate imparti prin 0" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    default:
-        std::cerr << "operator invalid" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-}

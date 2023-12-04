@@ -434,183 +434,109 @@
 //    return out;
 //}
 //
-//const int MAX_SIZE = 100;
+//#include <iostream>
+//#include <sstream>
 //
-//class ExpressionEvaluator {
+//class MathExpressionHandler {
 //private:
-//    char outputQueue[MAX_SIZE];
-//    char operatorStack[MAX_SIZE];
-//    int outputIndex;
-//    int operatorIndex;
-//    int operandStack[MAX_SIZE];
-//    int stackIndex;
-//
+//    double values[100];
+//    char operators[100];
+//    int valIndex;
+//    int opIndex = 0;
 //public:
-//    ExpressionEvaluator() : outputIndex(-1), operatorIndex(-1), stackIndex(-1) {}
+//    MathExpressionHandler(const std::string& expression) : expression_(expression) {}
 //
-//    bool isOperator(char c) {
-//        return (c == '+' || c == '-' || c == '*' || c == '/');
-//    }
+//    double evaluate() {
+//        
 //
-//    int getPrecedence(char op) {
-//        if (op == '+' || op == '-')
-//            return 1;
-//        if (op == '*' || op == '/')
-//            return 2;
-//        return 0;
-//    }
+//        std::istringstream input(expression_);
 //
-//    void pushToOutput(char element) {
-//        if (outputIndex < MAX_SIZE - 1) {
-//            outputQueue[++outputIndex] = element;
-//        }
-//        else {
-//            cerr << "eroare" << endl;
-//            exit(EXIT_FAILURE);
-//        }
-//    }
+//        double number;
+//        char op, lastOp = '\0';
 //
-//    void pushToOperatorStack(char element) {
-//        if (operatorIndex < MAX_SIZE - 1) {
-//            operatorStack[++operatorIndex] = element;
-//        }
-//        else {
-//            cerr << "Operator invalid" << endl;
-//            exit(EXIT_FAILURE);
-//        }
-//    }
+//        while (input >> number) {
+//            values[valIndex++] = number;
 //
-//    char popFromOperatorStack() {
-//        if (operatorIndex >= 0) {
-//            return operatorStack[operatorIndex--];
-//        }
-//        else {
-//            cerr << "index invalid" << endl;
-//            exit(EXIT_FAILURE);
-//        }
-//    }
-//
-//    void pushOperand(int operand) {
-//        if (stackIndex < MAX_SIZE - 1) {
-//            operandStack[++stackIndex] = operand;
-//        }
-//        else {
-//            cerr << "index invalid" << endl;
-//            exit(EXIT_FAILURE);
-//        }
-//    }
-//
-//    int popOperand() {
-//        if (stackIndex >= 0) {
-//            return operandStack[stackIndex--];
-//        }
-//        else {
-//            std::cerr << "invalid index" << std::endl;
-//            exit(EXIT_FAILURE);
-//        }
-//    }
-//
-//    string infixToPostfix(const std::string& infixExpression) {
-//        for (char token : infixExpression) {
-//            if (isalnum(token)) {
-//                pushToOutput(token);
-//            }
-//            else if (isOperator(token)) {
-//                while (operatorIndex >= 0 && isOperator(operatorStack[operatorIndex]) &&
-//                    getPrecedence(operatorStack[operatorIndex]) >= getPrecedence(token)) {
-//                    pushToOutput(popFromOperatorStack());
+//            while (input >> op) {
+//                if (op == ' ') {
+//                    continue;
 //                }
-//                pushToOperatorStack(token);
-//            }
-//            else if (token == '(') {
-//                pushToOperatorStack(token);
-//            }
-//            else if (token == ')') {
-//                while (operatorIndex >= 0 && operatorStack[operatorIndex] != '(') {
-//                    pushToOutput(popFromOperatorStack());
+//
+//                if (op == '+' || op == '-') {
+//                    while (opIndex > 0 && (operators[opIndex - 1] == '+' || operators[opIndex - 1] == '-' || operators[opIndex - 1] == '*' || operators[opIndex - 1] == '/')) {
+//                        applyOperator(values, operators[--opIndex]);
+//                    }
+//                    operators[opIndex++] = op;
 //                }
-//                if (operatorIndex >= 0 && operatorStack[operatorIndex] == '(') {
-//                    popFromOperatorStack();
+//                else if (op == '*' || op == '/') {
+//                    while (opIndex > 0 && (operators[opIndex - 1] == '*' || operators[opIndex - 1] == '/')) {
+//                        applyOperator(values, operators[--opIndex]);
+//                    }
+//                    operators[opIndex++] = op;
+//                }
+//                else if (op == '(') {
+//                    operators[opIndex++] = op;
+//                }
+//                else if (op == ')') {
+//                    while (opIndex > 0 && operators[opIndex - 1] != '(') {
+//                        applyOperator(values, operators[--opIndex]);
+//                    }
+//                    opIndex--; // Pop '('
 //                }
 //                else {
-//                    std::cerr << "eroare" << std::endl;
-//                    exit(EXIT_FAILURE);
+//                    input.putback(op);
+//                    break;
 //                }
 //            }
+//            lastOp = '\0';
 //        }
 //
-//        while (operatorIndex >= 0) {
-//            if (operatorStack[operatorIndex] == '(' || operatorStack[operatorIndex] == ')') {
-//                std::cerr << "Mismatched parentheses." << std::endl;
-//                exit(EXIT_FAILURE);
-//            }
-//            pushToOutput(popFromOperatorStack());
+//        while (opIndex > 0) {
+//            applyOperator(values, operators[--opIndex]);
 //        }
 //
-//        return std::string(outputQueue, outputIndex + 1);
-//    }
-//
-//    int evaluatePostfix(const std::string& postfixExpression) {
-//        for (char token : postfixExpression) {
-//            if (isdigit(token)) {
-//                pushOperand(token - '0');
-//            }
-//            else if (isOperator(token)) {
-//                int operand2 = popOperand();
-//                int operand1 = popOperand();
-//                int result = performOperation(token, operand1, operand2);
-//                pushOperand(result);
-//            }
-//        }
-//
-//        if (stackIndex == 0) {
-//            return operandStack[stackIndex];
-//        }
-//        else {
-//            std::cerr << "Error: Invalid postfix expression." << std::endl;
-//            exit(EXIT_FAILURE);
-//        }
+//        return values[--valIndex];
 //    }
 //
 //private:
-//    int performOperation(char op, int operand1, int operand2) {
+//    void applyOperator(double values[], char op) {
+//        double right = values[--valIndex];
+//        double left = values[--valIndex];
+//
 //        switch (op) {
 //        case '+':
-//            return operand1 + operand2;
+//            values[valIndex++] = left + right;
+//            break;
 //        case '-':
-//            return operand1 - operand2;
+//            values[valIndex++] = left - right;
+//            break;
 //        case '*':
-//            return operand1 * operand2;
+//            values[valIndex++] = left * right;
+//            break;
 //        case '/':
-//            if (operand2 != 0) {
-//                return operand1 / operand2;
+//            if (right != 0.0) {
+//                values[valIndex++] = left / right;
 //            }
 //            else {
-//                std::cerr << "nu se poate imparti prin 0" << std::endl;
-//                exit(EXIT_FAILURE);
+//                std::cerr << "Error: Division by zero." << std::endl;
 //            }
-//        default:
-//            std::cerr << "operator invalid" << std::endl;
-//            exit(EXIT_FAILURE);
+//            break;
 //        }
 //    }
+//
+//    std::string expression_;
 //};
 //
-//int main()
-//{
-//    ExpressionEvaluator evaluator;
+//int main() {
+//    std::string inputExpression;
+//    std::cout << "Enter a mathematical expression: ";
+//    std::getline(std::cin, inputExpression);
 //
-//    string infixExpression;
-//    cout << "Enter an infix expression: ";
-//    getline(cin, infixExpression);
+//    MathExpressionHandler expressionHandler(inputExpression);
+//    double result = expressionHandler.evaluate();
 //
-//    string postfixExpression = evaluator.infixToPostfix(infixExpression);
-//
-//    cout << "Postfix expression: " << postfixExpression << std::endl;
-//
-//    int result = evaluator.evaluatePostfix(postfixExpression);
-//
-//    cout << "Result: " << result << std::endl;
+//    std::cout << "Result: " << result << std::endl;
 //
 //    return 0;
 //}
+//
